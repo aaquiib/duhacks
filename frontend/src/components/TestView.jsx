@@ -1,5 +1,5 @@
 // src/components/TestView.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const TestView = ({ user }) => {
@@ -8,10 +8,33 @@ const TestView = ({ user }) => {
   const [test, setTest] = useState(null);
   const [answers, setAnswers] = useState([]);
   const [error, setError] = useState(null);
+  const [wasPasted, setWasPasted] = useState(false);
+  const textareaRefs = useRef([]); // Store refs to textareas
 
   useEffect(() => {
     fetchTest();
   }, [id]);
+
+  useEffect(() => {
+    // Add paste event listeners after render
+    textareaRefs.current.forEach((textarea, index) => {
+      if (textarea) {
+        textarea.addEventListener('paste', () => {
+          console.log(`Paste detected in textarea ${index}`);
+          setWasPasted(true);
+        });
+      }
+    });
+
+    // Cleanup listeners
+    return () => {
+      textareaRefs.current.forEach((textarea) => {
+        if (textarea) {
+          textarea.removeEventListener('paste', () => setWasPasted(true));
+        }
+      });
+    };
+  }, [test]); // Re-run when test loads
 
   const fetchTest = async () => {
     try {
@@ -24,6 +47,7 @@ const TestView = ({ user }) => {
       if (!foundTest) throw new Error('Test not found');
       setTest(foundTest);
       setAnswers(foundTest.questions.map(() => ''));
+      textareaRefs.current = foundTest.questions.map(() => null); // Initialize refs
     } catch (err) {
       setError(err.message);
     }
@@ -42,13 +66,17 @@ const TestView = ({ user }) => {
       return;
     }
     try {
+      console.log('Submitting with wasPasted:', wasPasted);
       const res = await fetch(`http://localhost:5000/tests/${id}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ answers: answers.map((text, index) => ({ questionIndex: index, text })) }),
+        body: JSON.stringify({
+          answers: answers.map((text, index) => ({ questionIndex: index, text })),
+          wasPasted
+        }),
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -71,6 +99,7 @@ const TestView = ({ user }) => {
           <div key={index} className="question-item">
             <h3>{index + 1}. {q.text}</h3>
             <textarea
+              ref={el => (textareaRefs.current[index] = el)} // Assign ref
               placeholder="Your answer..."
               value={answers[index]}
               onChange={(e) => updateAnswer(index, e.target.value)}

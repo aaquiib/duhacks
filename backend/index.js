@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// Test Schema (Updated)
+// Test Schema
 const testSchema = new mongoose.Schema({
   title: { type: String, required: true },
   teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -33,7 +33,8 @@ const testSchema = new mongoose.Schema({
   submissions: [{
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     answers: [{ questionIndex: Number, text: String }],
-    submittedAt: { type: Date, default: Date.now }
+    submittedAt: { type: Date, default: Date.now },
+    wasPasted: { type: Boolean, default: false }
   }],
 });
 const Test = mongoose.model('Test', testSchema);
@@ -79,56 +80,79 @@ app.post('/tests', auth, async (req, res) => {
   }
   const test = new Test({ title, teacherId: req.user.id, questions, assignedStudents: [] });
   await test.save();
+  console.log('Test created:', test);
   res.status(201).json(test);
 });
 
 app.get('/tests', auth, async (req, res) => {
-  if (req.user.role === 'teacher') {
-    const tests = await Test.find({ teacherId: req.user.id })
+  try {
+    if (req.user.role === 'teacher') {
+      const tests = await Test.find({ teacherId: req.user.id })
+        .populate('assignedStudents', 'email')
+        .populate('submissions.studentId', 'email');
+      console.log('Teacher tests:', tests);
+      return res.json(tests);
+    }
+    const tests = await Test.find({ assignedStudents: req.user.id })
       .populate('assignedStudents', 'email')
       .populate('submissions.studentId', 'email');
-    return res.json(tests);
+    console.log('Student tests:', tests);
+    res.json(tests);
+  } catch (err) {
+    console.error('Error fetching tests:', err);
+    res.status(500).json({ message: 'Server error' });
   }
-  const tests = await Test.find({ assignedStudents: req.user.id })
-    .populate('assignedStudents', 'email')
-    .populate('submissions.studentId', 'email');
-  res.json(tests);
 });
 
 app.post('/tests/:id/assign', auth, async (req, res) => {
   if (req.user.role !== 'teacher') return res.status(403).json({ message: 'Unauthorized' });
   const { studentEmail } = req.body;
-  const test = await Test.findById(req.params.id);
-  if (!test || test.teacherId.toString() !== req.user.id) {
-    return res.status(404).json({ message: 'Test not found or unauthorized' });
+  console.log(`Assigning student ${studentEmail} to test ${req.params.id}`);
+  try {
+    const test = await Test.findById(req.params.id);
+    if (!test || test.teacherId.toString() !== req.user.id) {
+      console.log('Test not found or unauthorized');
+      return res.status(404).json({ message: 'Test not found or unauthorized' });
+    }
+    const student = await User.findOne({ email: studentEmail, role: 'student' });
+    if (!student) {
+      console.log('Student not found');
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    if (!test.assignedStudents.includes(student._id)) {
+      test.assignedStudents.push(student._id);
+      await test.save();
+      console.log(`Student ${student._id} assigned to test ${test._id}`);
+    } else {
+      console.log('Student already assigned');
+    }
+    const updatedTest = await Test.findById(req.params.id)
+      .populate('assignedStudents', 'email')
+      .populate('submissions.studentId', 'email');
+    console.log('Updated test:', updatedTest);
+    res.json(updatedTest);
+  } catch (err) {
+    console.error('Error assigning student:', err);
+    res.status(500).json({ message: 'Server error' });
   }
-  const student = await User.findOne({ email: studentEmail, role: 'student' });
-  if (!student) return res.status(404).json({ message: 'Student not found' });
-  if (!test.assignedStudents.includes(student._id)) {
-    test.assignedStudents.push(student._id);
-    await test.save();
-  }
-  const updatedTest = await Test.findById(req.params.id)
-    .populate('assignedStudents', 'email')
-    .populate('submissions.studentId', 'email');
-  res.json(updatedTest);
 });
 
 app.post('/tests/:id/submit', auth, async (req, res) => {
   if (req.user.role !== 'student') return res.status(403).json({ message: 'Unauthorized' });
-  const { answers } = req.body;
+  const { answers, wasPasted } = req.body;
+  console.log(`Submission for test ${req.params.id}: wasPasted = ${wasPasted}`);
   const test = await Test.findById(req.params.id);
   if (!test || !test.assignedStudents.includes(req.user.id)) {
     return res.status(403).json({ message: 'Not authorized to submit' });
   }
   const hasSubmitted = test.submissions.some(sub => sub.studentId.toString() === req.user.id);
   if (hasSubmitted) return res.status(403).json({ message: 'You have already submitted this test' });
-  test.submissions.push({ studentId: req.user.id, answers });
+  test.submissions.push({ studentId: req.user.id, answers, wasPasted });
   await test.save();
+  console.log('Saved submission:', test.submissions[test.submissions.length - 1]);
   res.json(test);
 });
 
-// Get all students for assigning (optional)
 app.get('/students', auth, async (req, res) => {
   if (req.user.role !== 'teacher') return res.status(403).json({ message: 'Unauthorized' });
   const students = await User.find({ role: 'student' }, 'email');

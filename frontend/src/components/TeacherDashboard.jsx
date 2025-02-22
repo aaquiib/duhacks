@@ -61,6 +61,7 @@ const TeacherDashboard = ({ user }) => {
       setTests(tests.map(t => t._id === testId ? data : t));
       setAssignEmail('');
       setError(null);
+      console.log('Assigned student successfully:', data);
     } catch (err) {
       setError(err.message);
       console.error('Assign student error:', err);
@@ -101,7 +102,10 @@ const TeacherDashboard = ({ user }) => {
                 {t.submissions.length > 0 ? (
                   t.submissions.map((sub, i) => (
                     <div key={i} className="submission-item">
-                      <p><strong>{sub.studentId.email}</strong> - Submitted: {new Date(sub.submittedAt).toLocaleString()}</p>
+                      <p>
+                        <strong>{sub.studentId.email}</strong> - Submitted: {new Date(sub.submittedAt).toLocaleString()}
+                        {sub.wasPasted && <span className="paste-flag"> (Copy-Pasted)</span>}
+                      </p>
                       {sub.answers.map((ans, j) => (
                         <p key={j}><strong>Q{j + 1}:</strong> {t.questions[ans.questionIndex].text} - <strong>A:</strong> {ans.text}</p>
                       ))}
