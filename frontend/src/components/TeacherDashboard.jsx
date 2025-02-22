@@ -4,8 +4,8 @@ import TestForm from './TestForm';
 
 const TeacherDashboard = ({ user }) => {
   const [tests, setTests] = useState([]);
-  const [studentEmail, setStudentEmail] = useState('');
   const [students, setStudents] = useState([]);
+  const [assignEmail, setAssignEmail] = useState('');
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -36,36 +36,34 @@ const TeacherDashboard = ({ user }) => {
       if (!res.ok) throw new Error('Failed to fetch students');
       const data = await res.json();
       setStudents(data);
-      setError(null);
     } catch (err) {
       setError(err.message);
       console.error('Fetch students error:', err);
     }
   };
 
-  const addStudent = async (e) => {
-    e.preventDefault();
-    if (!studentEmail.trim()) {
+  const assignStudent = async (testId) => {
+    if (!assignEmail.trim()) {
       setError('Please enter a student email');
       return;
     }
     try {
-      const res = await fetch('http://localhost:5000/students', {
+      const res = await fetch(`http://localhost:5000/tests/${testId}/assign`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ studentEmail }),
+        body: JSON.stringify({ studentEmail: assignEmail }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to add student');
-      setStudents(data);
-      setStudentEmail('');
+      if (!res.ok) throw new Error(data.message || 'Failed to assign student');
+      setTests(tests.map(t => t._id === testId ? data : t));
+      setAssignEmail('');
       setError(null);
     } catch (err) {
       setError(err.message);
-      console.error('Add student error:', err);
+      console.error('Assign student error:', err);
     }
   };
 
@@ -74,44 +72,6 @@ const TeacherDashboard = ({ user }) => {
       <h1>Welcome, {user.email} (Teacher)</h1>
       {error && <p className="error">{error}</p>}
       <TestForm onTestCreated={fetchTests} />
-      <form onSubmit={addStudent} className="student-form">
-        <input
-          type="email"
-          placeholder="Add student by email"
-          value={studentEmail}
-          onChange={(e) => setStudentEmail(e.target.value)}
-        />
-        <button type="submit">Add Student</button>
-      </form>
-      <div className="students-list">
-        <h2>Students</h2>
-        {students.length > 0 ? (
-          students.map((student, index) => (
-            <div key={index} className="student-item">
-              <h3>{student.email}</h3>
-              <div className="tests-list">
-                {tests.filter(t => t.submissions.some(s => s.studentId.email === student.email)).map(t => (
-                  <div key={t._id} className="test-item">
-                    <h4>{t.title}</h4>
-                    <div className="submissions">
-                      {t.submissions.filter(s => s.studentId.email === student.email).map((sub, i) => (
-                        <div key={i}>
-                          <p><strong>Submitted At:</strong> {new Date(sub.submittedAt).toLocaleString()}</p>
-                          {sub.answers.map((ans, j) => (
-                            <p key={j}><strong>Q{j + 1}:</strong> {t.questions[ans.questionIndex].text} - <strong>A:</strong> {ans.text}</p>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))
-        ) : (
-          <p>No students added yet.</p>
-        )}
-      </div>
       <div className="tests-list">
         <h2>All Tests</h2>
         {tests.length > 0 ? (
@@ -119,6 +79,38 @@ const TeacherDashboard = ({ user }) => {
             <div key={t._id} className="test-item">
               <h4>{t.title}</h4>
               <p>{t.questions.length} Questions</p>
+              <div className="assign-form">
+                <input
+                  type="email"
+                  placeholder="Assign student by email"
+                  value={assignEmail}
+                  onChange={(e) => setAssignEmail(e.target.value)}
+                />
+                <button onClick={() => assignStudent(t._id)}>Assign</button>
+              </div>
+              <div className="assigned-students">
+                <h5>Assigned Students:</h5>
+                {t.assignedStudents.length > 0 ? (
+                  t.assignedStudents.map((s, i) => <p key={i}>{s.email}</p>)
+                ) : (
+                  <p>No students assigned</p>
+                )}
+              </div>
+              <div className="submissions">
+                <h5>Submissions:</h5>
+                {t.submissions.length > 0 ? (
+                  t.submissions.map((sub, i) => (
+                    <div key={i} className="submission-item">
+                      <p><strong>{sub.studentId.email}</strong> - Submitted: {new Date(sub.submittedAt).toLocaleString()}</p>
+                      {sub.answers.map((ans, j) => (
+                        <p key={j}><strong>Q{j + 1}:</strong> {t.questions[ans.questionIndex].text} - <strong>A:</strong> {ans.text}</p>
+                      ))}
+                    </div>
+                  ))
+                ) : (
+                  <p>No submissions yet</p>
+                )}
+              </div>
             </div>
           ))
         ) : (

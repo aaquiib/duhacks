@@ -41,7 +41,7 @@ const StudentDashboard = ({ user }) => {
               </div>
             ))
           ) : (
-            <p>No new tests available.</p>
+            <p>No new tests assigned.</p>
           )}
         </div>
       </div>

@@ -362,3 +362,38 @@
   border-radius: 8px;
   margin-bottom: 20px;
 }
+
+/* src/App.css (add or update) */
+.assign-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.assign-form input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #f0f4f8;
+}
+
+.assign-form button {
+  padding: 10px 20px;
+}
+
+.assigned-students, .submissions {
+  margin-top: 15px;
+}
+
+.assigned-students h5, .submissions h5 {
+  color: #1e3c72;
+  margin-bottom: 10px;
+}
+
+.submission-item {
+  background: #f0f4f8;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
