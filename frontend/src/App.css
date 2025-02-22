@@ -404,3 +404,10 @@
   font-weight: bold;
   margin-left: 10px;
 }
+
+/* src/App.css (add this) */
+.plagiarism-flag {
+  color: #ff9800; /* Orange to distinguish from paste flag */
+  font-weight: bold;
+  margin-left: 10px;
+}

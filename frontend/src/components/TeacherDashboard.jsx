@@ -105,6 +105,7 @@ const TeacherDashboard = ({ user }) => {
                       <p>
                         <strong>{sub.studentId.email}</strong> - Submitted: {new Date(sub.submittedAt).toLocaleString()}
                         {sub.wasPasted && <span className="paste-flag"> (Copy-Pasted)</span>}
+                        {sub.plagiarismFlag && <span className="plagiarism-flag"> (Plagiarism Detected)</span>}
                       </p>
                       {sub.answers.map((ans, j) => (
                         <p key={j}><strong>Q{j + 1}:</strong> {t.questions[ans.questionIndex].text} - <strong>A:</strong> {ans.text}</p>

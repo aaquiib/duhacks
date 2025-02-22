@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const stringSimilarity = require('string-similarity'); // Import library
 
 const app = express();
 app.use(cors());
@@ -24,7 +25,7 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// Test Schema
+// Test Schema (Updated with plagiarismFlag)
 const testSchema = new mongoose.Schema({
   title: { type: String, required: true },
   teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -34,7 +35,8 @@ const testSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     answers: [{ questionIndex: Number, text: String }],
     submittedAt: { type: Date, default: Date.now },
-    wasPasted: { type: Boolean, default: false }
+    wasPasted: { type: Boolean, default: false },
+    plagiarismFlag: { type: Boolean, default: false } // New field for plagiarism
   }],
 });
 const Test = mongoose.model('Test', testSchema);
@@ -137,6 +139,26 @@ app.post('/tests/:id/assign', auth, async (req, res) => {
   }
 });
 
+// Plagiarism Detection Function
+const checkPlagiarism = (text) => {
+  // Sample common web phrases or external content to check against
+  const webContent = [
+    "Lorem ipsum dolor sit amet",
+    "The quick brown fox jumps over the lazy dog",
+    "To be or not to be, that is the question",
+    // Add more real-world examples or fetch from an external source in production
+  ];
+  
+  let maxSimilarity = 0;
+  webContent.forEach(source => {
+    const similarity = stringSimilarity.compareTwoStrings(text.toLowerCase(), source.toLowerCase());
+    if (similarity > maxSimilarity) maxSimilarity = similarity;
+  });
+
+  // Flag as plagiarized if similarity exceeds a threshold (e.g., 0.6)
+  return maxSimilarity > 0.6;
+};
+
 app.post('/tests/:id/submit', auth, async (req, res) => {
   if (req.user.role !== 'student') return res.status(403).json({ message: 'Unauthorized' });
   const { answers, wasPasted } = req.body;
@@ -147,7 +169,12 @@ app.post('/tests/:id/submit', auth, async (req, res) => {
   }
   const hasSubmitted = test.submissions.some(sub => sub.studentId.toString() === req.user.id);
   if (hasSubmitted) return res.status(403).json({ message: 'You have already submitted this test' });
-  test.submissions.push({ studentId: req.user.id, answers, wasPasted });
+
+  // Check for plagiarism
+  const plagiarismFlag = answers.some(ans => checkPlagiarism(ans.text));
+  console.log(`Plagiarism check result: ${plagiarismFlag}`);
+
+  test.submissions.push({ studentId: req.user.id, answers, wasPasted, plagiarismFlag });
   await test.save();
   console.log('Saved submission:', test.submissions[test.submissions.length - 1]);
   res.json(test);
