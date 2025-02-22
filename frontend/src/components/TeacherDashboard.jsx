@@ -1,29 +1,30 @@
 // src/components/TeacherDashboard.jsx
 import { useState, useEffect } from 'react';
-import Question from './Question';
+import TestForm from './TestForm';
 
 const TeacherDashboard = ({ user }) => {
-  const [newQuestion, setNewQuestion] = useState('');
-  const [questions, setQuestions] = useState([]);
+  const [tests, setTests] = useState([]);
   const [studentEmail, setStudentEmail] = useState('');
   const [students, setStudents] = useState([]);
-  const [error, setError] = useState(null); // Add error state for debugging
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchQuestions();
+    fetchTests();
     fetchStudents();
   }, []);
 
-  const fetchQuestions = async () => {
+  const fetchTests = async () => {
     try {
-      const res = await fetch('http://localhost:5000/questions', {
+      const res = await fetch('http://localhost:5000/tests', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
       });
-      if (!res.ok) throw new Error('Failed to fetch questions');
+      if (!res.ok) throw new Error('Failed to fetch tests');
       const data = await res.json();
-      setQuestions(data);
+      setTests(data);
+      setError(null);
     } catch (err) {
       setError(err.message);
+      console.error('Fetch tests error:', err);
     }
   };
 
@@ -35,35 +36,19 @@ const TeacherDashboard = ({ user }) => {
       if (!res.ok) throw new Error('Failed to fetch students');
       const data = await res.json();
       setStudents(data);
+      setError(null);
     } catch (err) {
       setError(err.message);
-    }
-  };
-
-  const addQuestion = async (e) => {
-    e.preventDefault();
-    if (!newQuestion.trim()) return;
-    try {
-      const res = await fetch('http://localhost:5000/questions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ text: newQuestion }),
-      });
-      if (!res.ok) throw new Error('Failed to add question');
-      const data = await res.json();
-      setQuestions([...questions, data]);
-      setNewQuestion('');
-    } catch (err) {
-      setError(err.message);
+      console.error('Fetch students error:', err);
     }
   };
 
   const addStudent = async (e) => {
     e.preventDefault();
-    if (!studentEmail.trim()) return;
+    if (!studentEmail.trim()) {
+      setError('Please enter a student email');
+      return;
+    }
     try {
       const res = await fetch('http://localhost:5000/students', {
         method: 'POST',
@@ -73,16 +58,14 @@ const TeacherDashboard = ({ user }) => {
         },
         body: JSON.stringify({ studentEmail }),
       });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to add student');
-      }
       const data = await res.json();
-      setStudents(data); // Update students with the returned list
+      if (!res.ok) throw new Error(data.message || 'Failed to add student');
+      setStudents(data);
       setStudentEmail('');
-      setError(null); // Clear any previous errors
+      setError(null);
     } catch (err) {
       setError(err.message);
+      console.error('Add student error:', err);
     }
   };
 
@@ -90,15 +73,7 @@ const TeacherDashboard = ({ user }) => {
     <div className="dashboard">
       <h1>Welcome, {user.email} (Teacher)</h1>
       {error && <p className="error">{error}</p>}
-      <form onSubmit={addQuestion} className="question-form">
-        <input
-          type="text"
-          placeholder="Enter a new question"
-          value={newQuestion}
-          onChange={(e) => setNewQuestion(e.target.value)}
-        />
-        <button type="submit">Add Question</button>
-      </form>
+      <TestForm onTestCreated={fetchTests} />
       <form onSubmit={addStudent} className="student-form">
         <input
           type="email"
@@ -112,27 +87,43 @@ const TeacherDashboard = ({ user }) => {
         <h2>Students</h2>
         {students.length > 0 ? (
           students.map((student, index) => (
-            <p key={index}>{student.email}</p>
+            <div key={index} className="student-item">
+              <h3>{student.email}</h3>
+              <div className="tests-list">
+                {tests.filter(t => t.submissions.some(s => s.studentId.email === student.email)).map(t => (
+                  <div key={t._id} className="test-item">
+                    <h4>{t.title}</h4>
+                    <div className="submissions">
+                      {t.submissions.filter(s => s.studentId.email === student.email).map((sub, i) => (
+                        <div key={i}>
+                          <p><strong>Submitted At:</strong> {new Date(sub.submittedAt).toLocaleString()}</p>
+                          {sub.answers.map((ans, j) => (
+                            <p key={j}><strong>Q{j + 1}:</strong> {t.questions[ans.questionIndex].text} - <strong>A:</strong> {ans.text}</p>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           ))
         ) : (
           <p>No students added yet.</p>
         )}
       </div>
-      <div className="questions-list">
-        {questions.map((q) => (
-          <div key={q._id} className="question-item">
-            <h3>{q.text}</h3>
-            <div className="answers">
-              {q.answers.length > 0 ? (
-                q.answers.map((ans, i) => (
-                  <p key={i}><strong>Student Answer {i + 1}:</strong> {ans.text}</p>
-                ))
-              ) : (
-                <p>No answers yet.</p>
-              )}
+      <div className="tests-list">
+        <h2>All Tests</h2>
+        {tests.length > 0 ? (
+          tests.map(t => (
+            <div key={t._id} className="test-item">
+              <h4>{t.title}</h4>
+              <p>{t.questions.length} Questions</p>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p>No tests created yet.</p>
+        )}
       </div>
     </div>
   );

@@ -214,3 +214,151 @@
   padding: 10px;
   border-radius: 8px;
 }
+
+/* src/App.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3c72, #2a5298, #6b7280);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.auth-container, .dashboard {
+  background: rgba(255, 255, 255, 0.98);
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 900px;
+  transition: all 0.3s ease;
+}
+
+.auth-container:hover, .dashboard:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.auth-container h1, .dashboard h1 {
+  color: #1e3c72;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.test-form, .student-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.test-form input, .student-form input, .test-view textarea {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #f0f4f8;
+  font-size: 16px;
+}
+
+.test-form button, .student-form button, .test-view button {
+  padding: 12px 25px;
+  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.test-form button:hover, .student-form button:hover, .test-view button:hover {
+  background: linear-gradient(90deg, #2a5298, #3b6db5);
+}
+
+.students-list h2, .tests-section h2 {
+  color: #1e3c72;
+  margin-bottom: 20px;
+}
+
+.student-item {
+  background: #f0f4f8;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.student-item h3 {
+  color: #2a5298;
+}
+
+.tests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.test-item {
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.test-item:hover {
+  transform: translateY(-5px);
+}
+
+.test-item h4 {
+  color: #1e3c72;
+  margin-bottom: 10px;
+}
+
+.test-item.submitted {
+  background: #e8eef4;
+}
+
+.test-link {
+  display: inline-block;
+  padding: 8px 15px;
+  background: #1e3c72;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.test-link:hover {
+  background: #2a5298;
+}
+
+.submissions p {
+  margin: 10px 0;
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.test-view .question-item {
+  margin-bottom: 20px;
+}
+
+.test-view textarea {
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+}
+
+.error {
+  color: #d32f2f;
+  background: #ffebee;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}

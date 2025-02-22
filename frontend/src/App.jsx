@@ -5,6 +5,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import TeacherDashboard from './components/TeacherDashboard';
 import StudentDashboard from './components/StudentDashboard';
+import TestView from './components/TestView';
 import './App.css';
 
 function App() {
@@ -13,7 +14,7 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      fetch('http://localhost:5000/questions', {
+      fetch('http://localhost:5000/tests', {
         headers: { 'Authorization': `Bearer ${token}` },
       }).then(res => res.json()).then(() => setUser(JSON.parse(localStorage.getItem('user'))));
     }
@@ -32,6 +33,10 @@ function App() {
           <Route
             path="/student"
             element={user && user.role === 'student' ? <StudentDashboard user={user} /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/test/:id"
+            element={user && user.role === 'student' ? <TestView user={user} /> : <Navigate to="/" />}
           />
         </Routes>
       </div>
