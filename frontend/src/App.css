@@ -1,42 +1,216 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* src/App.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3c72, #2a5298, #6b7280);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.auth-container {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 450px;
   text-align: center;
+  transform: translateY(0);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.auth-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.auth-container h1 {
+  margin-bottom: 25px;
+  color: #1e3c72;
+  font-weight: 600;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.auth-container input,
+.auth-container select,
+.auth-container textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 8px;
+  background: #f0f4f8;
+  font-size: 16px;
+  transition: background 0.3s ease;
 }
 
-.card {
-  padding: 2em;
+.auth-container input:focus,
+.auth-container select:focus,
+.auth-container textarea:focus {
+  background: #e8eef4;
+  outline: none;
 }
 
-.read-the-docs {
-  color: #888;
+.auth-container button {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.auth-container button:hover {
+  background: linear-gradient(90deg, #2a5298, #3b6db5);
+  transform: translateY(-2px);
+}
+
+.auth-container p {
+  margin-top: 20px;
+  color: #555;
+}
+
+.auth-container a {
+  color: #1e3c72;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-container a:hover {
+  text-decoration: underline;
+}
+
+.dashboard {
+  background: rgba(255, 255, 255, 0.98);
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 900px;
+  transition: all 0.3s ease;
+}
+
+.dashboard:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.dashboard h1 {
+  color: #1e3c72;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.question-form,
+.student-form {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.question-form input,
+.student-form input {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #f0f4f8;
+  font-size: 16px;
+}
+
+.question-form button,
+.student-form button {
+  padding: 12px 25px;
+  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.question-form button:hover,
+.student-form button:hover {
+  background: linear-gradient(90deg, #2a5298, #3b6db5);
+}
+
+.students-list h2 {
+  color: #1e3c72;
+  margin-bottom: 15px;
+}
+
+.students-list p {
+  background: #f0f4f8;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.question-item {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.question-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.question-item h3 {
+  color: #1e3c72;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.question-item textarea {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #f0f4f8;
+  min-height: 120px;
+  margin-bottom: 15px;
+  resize: vertical;
+}
+
+.question-item button {
+  padding: 10px 20px;
+  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.question-item button:hover {
+  background: linear-gradient(90deg, #2a5298, #3b6db5);
+}
+
+.answers p {
+  margin: 10px 0;
+  color: #333;
+  background: #f0f4f8;
+  padding: 10px;
+  border-radius: 8px;
 }

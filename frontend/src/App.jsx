@@ -1,36 +1,41 @@
-import React, { useState } from 'react';
+// src/App.jsx
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './components/Login';
+import Register from './components/Register';
+import TeacherDashboard from './components/TeacherDashboard';
+import StudentDashboard from './components/StudentDashboard';
 import './App.css';
-import QuestionBox from './components/QuestionBox';
-import AnswerBox from './components/AnswerBox';
-import SubmitButton from './components/SubmitButton';
-import Sidebar from './components/Sidebar';
-import Overlay from './components/Overlay';
 
 function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [answer, setAnswer] = useState('');
+  const [user, setUser] = useState(null);
 
-  const handleSubmit = () => {
-    if (answer.trim()) {
-      setSidebarOpen(true);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch('http://localhost:5000/questions', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      }).then(res => res.json()).then(() => setUser(JSON.parse(localStorage.getItem('user'))));
     }
-  };
+  }, []);
 
   return (
-    <div className="container">
-      {/* Card */}
-      <div className="card">
-        <QuestionBox />
-        <AnswerBox value={answer} onChange={(e) => setAnswer(e.target.value)} />
-        <SubmitButton onClick={handleSubmit} />
+    <Router>
+      <div className="app">
+        <Routes>
+          <Route path="/" element={<Login setUser={setUser} />} />
+          <Route path="/register" element={<Register setUser={setUser} />} />
+          <Route
+            path="/teacher"
+            element={user && user.role === 'teacher' ? <TeacherDashboard user={user} /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/student"
+            element={user && user.role === 'student' ? <StudentDashboard user={user} /> : <Navigate to="/" />}
+          />
+        </Routes>
       </div>
-
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-      {/* Overlay */}
-      <Overlay isVisible={sidebarOpen} onClick={() => setSidebarOpen(false)} />
-    </div>
+    </Router>
   );
 }
 
