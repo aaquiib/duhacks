@@ -1,4 +1,6 @@
 const Test = require('../models/Test');
+const User = require('../models/User');
+
 const stringSimilarity = require('string-similarity');
 
 const checkPlagiarism = (text) => {
@@ -64,3 +66,36 @@ exports.submitTest = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.assignTest = async (req, res) => {
+  if (req.user.role !== 'teacher') return res.status(403).json({ message: 'Unauthorized' });
+  const { studentEmail } = req.body;
+  console.log(`Assigning student ${studentEmail} to test ${req.params.id}`);
+  try {
+    const test = await Test.findById(req.params.id);
+    if (!test || test.teacherId.toString() !== req.user.id) {
+      console.log('Test not found or unauthorized');
+      return res.status(404).json({ message: 'Test not found or unauthorized' });
+    }
+    const student = await User.findOne({ email: studentEmail, role: 'student' });
+    if (!student) {
+      console.log('Student not found');
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    if (!test.assignedStudents.includes(student._id)) {
+      test.assignedStudents.push(student._id);
+      await test.save();
+      console.log(`Student ${student._id} assigned to test ${test._id}`);
+    } else {
+      console.log('Student already assigned');
+    }
+    const updatedTest = await Test.findById(req.params.id)
+      .populate('assignedStudents', 'email')
+      .populate('submissions.studentId', 'email');
+    console.log('Updated test:', updatedTest);
+    res.json(updatedTest);
+  } catch (err) {
+    console.error('Error assigning student:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}

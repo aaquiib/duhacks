@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+
 const authMiddleware = require('./middleware/authMiddleware');
 const authController = require('./controllers/authController');
 const testController = require('./controllers/testController');
@@ -24,6 +25,7 @@ app.post('/login', authController.login);
 app.post('/tests', authMiddleware, testController.createTest);
 app.get('/tests', authMiddleware, testController.getTests);
 app.post('/tests/:id/submit', authMiddleware, testController.submitTest);
+app.post('/tests/:id/assign',authMiddleware, testController.assignTest);
 
 // Student Routes
 app.get('/students', authMiddleware, studentController.getStudents);
