@@ -20,13 +20,15 @@ const Register = ({ setUser }) => {
       const loginRes = await fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies in request
         body: JSON.stringify({ email, password }),
       });
       const loginData = await loginRes.json();
-      localStorage.setItem('token', loginData.token);
-      localStorage.setItem('user', JSON.stringify(loginData.user));
-      setUser(loginData.user);
-      navigate(loginData.user.role === 'teacher' ? '/teacher' : '/student');
+      if (loginRes.ok) {
+        localStorage.setItem('user', JSON.stringify(loginData.user)); // Store user info for UI
+        setUser(loginData.user);
+        navigate(loginData.user.role === 'teacher' ? '/teacher' : '/student');
+      }
     } else {
       alert(data.message);
     }

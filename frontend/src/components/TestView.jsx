@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:5000');
+const socket = io('http://localhost:5000', { withCredentials: true }); // Include credentials for Socket.IO
 
 const TestView = ({ user }) => {
   const { id } = useParams();
@@ -60,7 +60,7 @@ const TestView = ({ user }) => {
   const fetchTest = async () => {
     try {
       const res = await fetch('http://localhost:5000/tests', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        credentials: 'include', // Include cookies in request
       });
       if (!res.ok) throw new Error('Failed to fetch test');
       const data = await res.json();
@@ -112,6 +112,7 @@ const TestView = ({ user }) => {
       fetch('http://localhost:5000/detect-faces', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Include cookies in request
       })
         .then(res => res.json())
         .then(data => {
@@ -152,8 +153,8 @@ const TestView = ({ user }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
+        credentials: 'include', // Include cookies in request
         body: JSON.stringify({
           answers: answers.map((text, index) => ({ questionIndex: index, text })),
           wasPasted,

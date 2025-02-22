@@ -24,8 +24,8 @@ const TestForm = ({ onTestCreated }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
+        credentials: 'include', // Include cookies in request
         body: JSON.stringify({ title, questions: questions.map(text => ({ text })) }),
       });
       const data = await res.json();

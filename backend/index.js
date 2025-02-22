@@ -7,18 +7,21 @@ const multer = require('multer');
 const http = require('http');
 const { Server } = require('socket.io');
 const { RekognitionClient, DetectFacesCommand } = require('@aws-sdk/client-rekognition');
+const cookieParser = require('cookie-parser');
 
 const authMiddleware = require('./middleware/authMiddleware');
 const authController = require('./controllers/authController');
 const testController = require('./controllers/testController');
 const studentController = require('./controllers/studentController');
+const User = require('./models/User'); // Import User model
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+const io = new Server(server, { cors: { origin: 'http://localhost:5173', credentials: true } });
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 // Multer setup for image uploads
 const upload = multer({ storage: multer.memoryStorage() });
@@ -39,6 +42,17 @@ const rekognition = new RekognitionClient({
 // Auth Routes
 app.post('/register', authController.register);
 app.post('/login', authController.login);
+
+// New endpoint to get authenticated user details
+app.get('/me', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password'); // Exclude password
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ user: { id: user._id, email: user.email, role: user.role } });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Test Routes
 app.post('/tests', authMiddleware, testController.createTest);

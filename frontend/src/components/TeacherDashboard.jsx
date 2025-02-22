@@ -16,7 +16,7 @@ const TeacherDashboard = ({ user }) => {
   const fetchTests = async () => {
     try {
       const res = await fetch('http://localhost:5000/tests', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        credentials: 'include', // Include cookies in request
       });
       if (!res.ok) throw new Error('Failed to fetch tests');
       const data = await res.json();
@@ -31,7 +31,7 @@ const TeacherDashboard = ({ user }) => {
   const fetchStudents = async () => {
     try {
       const res = await fetch('http://localhost:5000/students', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        credentials: 'include', // Include cookies in request
       });
       if (!res.ok) throw new Error('Failed to fetch students');
       const data = await res.json();
@@ -52,8 +52,8 @@ const TeacherDashboard = ({ user }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
+        credentials: 'include', // Include cookies in request
         body: JSON.stringify({ studentEmail: assignEmail }),
       });
       const data = await res.json();

@@ -14,7 +14,7 @@ const StudentDashboard = ({ user }) => {
   const fetchTests = async () => {
     try {
       const res = await fetch('http://localhost:5000/tests', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        credentials: 'include', // Include cookies in request
       });
       if (!res.ok) throw new Error('Failed to fetch tests');
       const data = await res.json();

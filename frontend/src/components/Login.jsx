@@ -12,12 +12,12 @@ const Login = ({ setUser }) => {
     const res = await fetch('http://localhost:5000/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // Include cookies in request
       body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+    if (res.ok) {
+      localStorage.setItem('user', JSON.stringify(data.user)); // Store user info for UI
       setUser(data.user);
       navigate(data.user.role === 'teacher' ? '/teacher' : '/student');
     } else {
