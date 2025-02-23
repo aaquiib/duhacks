@@ -4,11 +4,12 @@ import { useState } from 'react';
 const Question = ({ question }) => {
   const [answer, setAnswer] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   const submitAnswer = async (e) => {
     e.preventDefault();
     if (answer.trim()) {
-      await fetch(`http://localhost:5000/questions/${question._id}/answer`, {
+      await fetch(`${BACKEND_URL}/questions/${question._id}/answer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

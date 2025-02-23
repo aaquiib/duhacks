@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import TestForm from './TestForm';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 const TeacherDashboard = ({ user }) => {
   const [tests, setTests] = useState([]);
   const [students, setStudents] = useState([]);
@@ -15,7 +17,7 @@ const TeacherDashboard = ({ user }) => {
 
   const fetchTests = async () => {
     try {
-      const res = await fetch('http://localhost:5000/tests', {
+      const res = await fetch(`${BACKEND_URL}/tests`, {
         credentials: 'include', // Include cookies in request
       });
       if (!res.ok) throw new Error('Failed to fetch tests');
@@ -30,7 +32,7 @@ const TeacherDashboard = ({ user }) => {
 
   const fetchStudents = async () => {
     try {
-      const res = await fetch('http://localhost:5000/students', {
+      const res = await fetch(`${BACKEND_URL}/students`, {
         credentials: 'include', // Include cookies in request
       });
       if (!res.ok) throw new Error('Failed to fetch students');
@@ -48,7 +50,7 @@ const TeacherDashboard = ({ user }) => {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/tests/${testId}/assign`, {
+      const res = await fetch(`${BACKEND_URL}/tests/${testId}/assign`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -3,7 +3,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:5000', { withCredentials: true }); // Include credentials for Socket.IO
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+const socket = io(`${BACKEND_URL}`, { withCredentials: true }); // Include credentials for Socket.IO
 
 const TestView = ({ user }) => {
   const { id } = useParams();
@@ -59,7 +61,7 @@ const TestView = ({ user }) => {
 
   const fetchTest = async () => {
     try {
-      const res = await fetch('http://localhost:5000/tests', {
+      const res = await fetch(`${BACKEND_URL}/tests`, {
         credentials: 'include', // Include cookies in request
       });
       if (!res.ok) throw new Error('Failed to fetch test');
@@ -109,7 +111,7 @@ const TestView = ({ user }) => {
       const formData = new FormData();
       formData.append('image', blob, 'snapshot.jpg');
 
-      fetch('http://localhost:5000/detect-faces', {
+      fetch(`${BACKEND_URL}/detect-faces`, {
         method: 'POST',
         body: formData,
         credentials: 'include', // Include cookies in request
@@ -149,7 +151,7 @@ const TestView = ({ user }) => {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/tests/${id}/submit`, {
+      const res = await fetch(`${BACKEND_URL}/tests/${id}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

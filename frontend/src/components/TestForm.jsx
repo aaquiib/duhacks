@@ -1,6 +1,8 @@
 // src/components/TestForm.jsx
 import { useState } from 'react';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 const TestForm = ({ onTestCreated }) => {
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState(['']);
@@ -20,7 +22,7 @@ const TestForm = ({ onTestCreated }) => {
       return;
     }
     try {
-      const res = await fetch('http://localhost:5000/tests', {
+      const res = await fetch(`${BACKEND_URL}/tests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

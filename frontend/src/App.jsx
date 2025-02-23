@@ -12,10 +12,12 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true); // Add loading state to prevent flicker
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch('http://localhost:5000/me', {
+        const res = await fetch(`${BACKEND_URL}/me`, {
           credentials: 'include', // Include cookies in request
         });
         if (res.ok) {

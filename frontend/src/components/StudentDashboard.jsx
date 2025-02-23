@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 const StudentDashboard = ({ user }) => {
   const [tests, setTests] = useState([]);
   const [submittedTests, setSubmittedTests] = useState([]);
@@ -13,7 +15,7 @@ const StudentDashboard = ({ user }) => {
 
   const fetchTests = async () => {
     try {
-      const res = await fetch('http://localhost:5000/tests', {
+      const res = await fetch(`${BACKEND_URL}/tests`, {
         credentials: 'include', // Include cookies in request
       });
       if (!res.ok) throw new Error('Failed to fetch tests');
