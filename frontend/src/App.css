@@ -15,6 +15,7 @@
   padding: 40px;
 }
 
+/* Authentication Container */
 .auth-container {
   background: rgba(255, 255, 255, 0.95);
   padding: 40px;
@@ -23,7 +24,6 @@
   width: 100%;
   max-width: 450px;
   text-align: center;
-  transform: translateY(0);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -91,13 +91,15 @@
   text-decoration: underline;
 }
 
+/* General Dashboard (Shared by Teacher and Student) */
 .dashboard {
   background: rgba(255, 255, 255, 0.98);
-  padding: 40px;
+  padding: 30px;
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   width: 100%;
   max-width: 900px;
+  margin: 0 auto;
   transition: all 0.3s ease;
 }
 
@@ -106,195 +108,38 @@
 }
 
 .dashboard h1 {
-  color: #1e3c72;
-  margin-bottom: 30px;
+  color: #2a5298; /* Lighter blue for both dashboards */
+  font-size: 24px;
   font-weight: 600;
 }
 
-.question-form,
-.student-form {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-}
-
-.question-form input,
-.student-form input {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #f0f4f8;
-  font-size: 16px;
-}
-
-.question-form button,
-.student-form button {
-  padding: 12px 25px;
-  background: linear-gradient(90deg, #1e3c72, #2a5298);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.question-form button:hover,
-.student-form button:hover {
-  background: linear-gradient(90deg, #2a5298, #3b6db5);
-}
-
-.students-list h2 {
-  color: #1e3c72;
-  margin-bottom: 15px;
-}
-
-.students-list p {
-  background: #f0f4f8;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.questions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.question-item {
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.question-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.question-item h3 {
-  color: #1e3c72;
-  margin-bottom: 15px;
-  font-weight: 500;
-}
-
-.question-item textarea {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #f0f4f8;
-  min-height: 120px;
-  margin-bottom: 15px;
-  resize: vertical;
-}
-
-.question-item button {
+/* Logout Button (Student Dashboard) */
+.dashboard .logout-button {
   padding: 10px 20px;
-  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  background: linear-gradient(90deg, #721c24, #9b2c2c);
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.question-item button:hover {
-  background: linear-gradient(90deg, #2a5298, #3b6db5);
-}
-
-.answers p {
-  margin: 10px 0;
-  color: #333;
-  background: #f0f4f8;
-  padding: 10px;
-  border-radius: 8px;
-}
-
-/* src/App.css */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
-
-.app {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1e3c72, #2a5298, #6b7280);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px;
-}
-
-.auth-container, .dashboard {
-  background: rgba(255, 255, 255, 0.98);
-  padding: 40px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 900px;
-  transition: all 0.3s ease;
-}
-
-.auth-container:hover, .dashboard:hover {
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
-}
-
-.auth-container h1, .dashboard h1 {
-  color: #1e3c72;
-  margin-bottom: 30px;
-  font-weight: 600;
-}
-
-.test-form, .student-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-bottom: 25px;
-}
-
-.test-form input, .student-form input, .test-view textarea {
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #f0f4f8;
   font-size: 16px;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
-.test-form button, .student-form button, .test-view button {
-  padding: 12px 25px;
-  background: linear-gradient(90deg, #1e3c72, #2a5298);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s ease;
+.dashboard .logout-button:hover {
+  background: linear-gradient(90deg, #9b2c2c, #c53030);
+  transform: translateY(-2px);
 }
 
-.test-form button:hover, .student-form button:hover, .test-view button:hover {
-  background: linear-gradient(90deg, #2a5298, #3b6db5);
+/* Tests Section (Shared) */
+.tests-section {
+  margin-bottom: 30px;
 }
 
-.students-list h2, .tests-section h2 {
-  color: #1e3c72;
-  margin-bottom: 20px;
-}
-
-.student-item {
-  background: #f0f4f8;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-}
-
-.student-item h3 {
+.tests-section h2 {
   color: #2a5298;
+  font-size: 20px;
+  margin-bottom: 15px;
 }
 
 .tests-list {
@@ -304,120 +149,307 @@
 }
 
 .test-item {
-  background: #fff;
+  background: white;
   padding: 15px;
   border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .test-item:hover {
   transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .test-item h4 {
   color: #1e3c72;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.test-item p {
+  color: #555;
+  font-size: 14px;
   margin-bottom: 10px;
 }
 
 .test-item.submitted {
-  background: #e8eef4;
+  background: #e8eef4; /* Light blue-gray for submitted tests */
 }
 
+/* Test Link (Student Dashboard) */
 .test-link {
   display: inline-block;
   padding: 8px 15px;
-  background: #1e3c72;
+  background: #2a5298;
   color: white;
   text-decoration: none;
-  border-radius: 8px;
-  margin-top: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: background 0.3s ease;
 }
 
 .test-link:hover {
-  background: #2a5298;
+  background: #3b6db5;
 }
 
-.submissions p {
-  margin: 10px 0;
-  background: #fff;
-  padding: 10px;
-  border-radius: 8px;
-}
-
-.test-view .question-item {
-  margin-bottom: 20px;
-}
-
-.test-view textarea {
-  width: 100%;
-  min-height: 100px;
-  resize: vertical;
-}
-
-.error {
-  color: #d32f2f;
-  background: #ffebee;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-/* src/App.css (add or update) */
-.assign-form {
-  display: flex;
-  gap: 10px;
+/* Submissions (Student Dashboard) */
+.submissions {
   margin-top: 10px;
 }
 
-.assign-form input {
+.submissions p {
+  background: #f0f4f8;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Teacher Dashboard Specific */
+.teacher-dashboard {
+  background: rgba(255, 255, 255, 0.98);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+}
+
+.teacher-dashboard:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.dashboard-header {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.error-message {
+  color: #d32f2f;
+  background: #ffebee;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.dashboard-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e8eef4;
+}
+
+.dashboard-tabs button {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  color: #2a5298;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.dashboard-tabs button.active {
+  background: #2a5298;
+  color: white;
+  border-radius: 6px 6px 0 0;
+}
+
+/* Test Card (Teacher Dashboard) */
+.test-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.test-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.test-header {
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: #f8fafc;
+}
+
+.test-header h3 {
+  color: #1e3c72;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.question-count {
+  color: #666;
+  font-size: 14px;
+}
+
+.expand-icon {
+  font-size: 12px;
+  color: #2a5298;
+}
+
+.test-details {
+  padding: 15px;
+}
+
+.assign-section {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.assign-section input {
   flex: 1;
   padding: 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #f0f4f8;
+  font-size: 14px;
 }
 
-.assign-form button {
+.assign-section button {
   padding: 10px 20px;
+  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
 }
 
-.assigned-students, .submissions {
-  margin-top: 15px;
+.assign-section button:hover {
+  background: linear-gradient(90deg, #2a5298, #3b6db5);
 }
 
-.assigned-students h5, .submissions h5 {
+.assigned-students,
+.submissions-section {
+  margin-bottom: 15px;
+}
+
+.assigned-students h4,
+.submissions-section h4 {
   color: #1e3c72;
   margin-bottom: 10px;
+  font-size: 16px;
 }
 
-.submission-item {
+.assigned-students p,
+.submissions-section p {
+  color: #333;
+  font-size: 14px;
+}
+
+.submission {
   background: #f0f4f8;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 6px;
   margin-bottom: 10px;
 }
 
+.submission-meta {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
 
-.paste-flag {
+.flag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  font-size: 12px;
+}
+
+.flag.paste {
+  background: #ffebee;
   color: #d32f2f;
-  font-weight: bold;
-  margin-left: 10px;
 }
 
-/* src/App.css (add this) */
-.plagiarism-flag {
-  color: #ff9800; /* Orange to distinguish from paste flag */
-  font-weight: bold;
-  margin-left: 10px;
+.flag.plagiarism {
+  background: #fff3cd;
+  color: #ff9800;
 }
 
-.ai-flag {
-  color: #2196f3; /* Blue to distinguish from paste and plagiarism flags */
-  font-weight: bold;
-  margin-left: 10px;
+.flag.ai {
+  background: #e8eef4;
+  color: #2196f3;
 }
 
+.answer {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.answer span {
+  color: #555;
+}
+
+/* Students List (Teacher Dashboard) */
+.students-list {
+  display: grid;
+  gap: 10px;
+}
+
+.student-card {
+  background: #f0f4f8;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.student-card p {
+  color: #333;
+  font-size: 14px;
+}
+
+/* Test Form (Teacher Dashboard) */
+.test-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.test-form input,
+.test-form textarea {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #f0f4f8;
+  font-size: 16px;
+}
+
+.test-form button {
+  padding: 12px 25px;
+  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.test-form button:hover {
+  background: linear-gradient(90deg, #2a5298, #3b6db5);
+}
+
+/* General Utility */
+.empty-message {
+  color: #666;
+  text-align: center;
+  padding: 20px;
+  font-size: 16px;
+}
+
+/* Camera Container */
 .camera-container {
   margin-bottom: 20px;
   text-align: center;
@@ -451,4 +483,97 @@
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
+}
+
+.test-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.test-form input,
+.test-form textarea {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #f0f4f8;
+  font-size: 16px;
+}
+
+.test-form button {
+  padding: 12px 25px;
+  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.test-form button:hover {
+  background: linear-gradient(90deg, #2a5298, #3b6db5);
+}
+
+.test-view {
+  background: rgba(255, 255, 255, 0.98);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.test-view h1 {
+  color: #2a5298;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.test-view .question-item {
+  margin-bottom: 20px;
+}
+
+.test-view .question-item h3 {
+  color: #1e3c72;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.test-view .question-item textarea {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #f0f4f8;
+  font-size: 16px;
+  min-height: 120px;
+  resize: vertical;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.test-view .question-item textarea:focus {
+  background: #e8eef4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  outline: none;
+}
+
+.test-view button[type="submit"] {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(90deg, #2a5298, #3b6db5);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.2s ease;
+  margin-top: 20px;
+}
+
+.test-view button[type="submit"]:hover {
+  background: linear-gradient(90deg, #3b6db5, #4a87d2);
+  transform: translateY(-2px);
 }

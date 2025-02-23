@@ -1,4 +1,3 @@
-// src/components/StudentDashboard.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -8,6 +7,7 @@ const StudentDashboard = ({ user, onLogout }) => {
   const [tests, setTests] = useState([]);
   const [submittedTests, setSubmittedTests] = useState([]);
   const [newTests, setNewTests] = useState([]);
+  const [expandedTest, setExpandedTest] = useState(null); // New state to track expanded test
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,26 +32,15 @@ const StudentDashboard = ({ user, onLogout }) => {
     navigate('/');
   };
 
+  const toggleTestDetails = (testId) => {
+    setExpandedTest(expandedTest === testId ? null : testId); // Toggle visibility
+  };
+
   return (
     <div className="dashboard">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div className="dashboard-header">
         <h1>Welcome, {user.email} (Student)</h1>
-        <button
-          onClick={handleLogoutClick}
-          style={{
-            padding: '10px 20px',
-            background: 'linear-gradient(90deg, #721c24, #9b2c2c)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: '500',
-            transition: 'background 0.3s ease, transform 0.2s ease',
-          }}
-          onMouseOver={(e) => (e.target.style.background = 'linear-gradient(90deg, #9b2c2c, #c53030)')}
-          onMouseOut={(e) => (e.target.style.background = 'linear-gradient(90deg, #721c24, #9b2c2c)')}
-        >
+        <button className="logout-button" onClick={handleLogoutClick}>
           Logout
         </button>
       </div>
@@ -77,17 +66,30 @@ const StudentDashboard = ({ user, onLogout }) => {
           {submittedTests.length > 0 ? (
             submittedTests.map((t) => (
               <div key={t._id} className="test-item submitted">
-                <h4>{t.title}</h4>
-                <div className="submissions">
-                  {t.submissions.filter((s) => s.studentId._id === user.id).map((sub, i) => (
-                    <div key={i}>
-                      <p><strong>Submitted At:</strong> {new Date(sub.submittedAt).toLocaleString()}</p>
-                      {sub.answers.map((ans, j) => (
-                        <p key={j}><strong>Q{j + 1}:</strong> {t.questions[ans.questionIndex].text} - <strong>A:</strong> {ans.text}</p>
+                <h4
+                  className="test-title"
+                  onClick={() => toggleTestDetails(t._id)}
+                >
+                  {t.title} <span className="expand-icon">{expandedTest === t._id ? '▲' : '▼'}</span>
+                </h4>
+                <p>{t.questions.length} Questions</p>
+                {expandedTest === t._id && (
+                  <div className="submissions">
+                    {t.submissions
+                      .filter((s) => s.studentId._id === user.id)
+                      .map((sub, i) => (
+                        <div key={i} className="submission-details">
+                          <p><strong>Submitted At:</strong> {new Date(sub.submittedAt).toLocaleString()}</p>
+                          {sub.answers.map((ans, j) => (
+                            <p key={j}>
+                              <strong>Q{j + 1}:</strong> {t.questions[ans.questionIndex].text} - 
+                              <strong> A:</strong> {ans.text}
+                            </p>
+                          ))}
+                        </div>
                       ))}
-                    </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
             ))
           ) : (
