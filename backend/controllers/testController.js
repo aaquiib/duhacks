@@ -1,20 +1,59 @@
 const Test = require('../models/Test');
 const User = require('../models/User');
+const Groq = require('groq-sdk');
 
-const stringSimilarity = require('string-similarity');
+// Initialize Groq with API key from environment variables
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-const checkPlagiarism = (text) => {
-  const webContent = [
-    "Lorem ipsum dolor sit amet",
-    "The quick brown fox jumps over the lazy dog",
-    "To be or not to be, that is the question",
-  ];
-  let maxSimilarity = 0;
-  webContent.forEach(source => {
-    const similarity = stringSimilarity.compareTwoStrings(text.toLowerCase(), source.toLowerCase());
-    if (similarity > maxSimilarity) maxSimilarity = similarity;
-  });
-  return maxSimilarity > 0.6;
+// Function to analyze content for AI generation and plagiarism using Groq API
+const analyzeContent = async (text) => {
+  const prompt = `
+    Analyze the following content and return a JSON object indicating whether it is AI-generated and/or plagiarized. The response must be valid JSON with the following structure:
+    {
+      "isAIGenerated": true/false,
+      "isPlagiarized": true/false
+    }
+    Ensure the output is strictly JSON, with no additional text or explanation outside the JSON object.
+
+    Content to analyze:
+    ${text}
+  `;
+
+  try {
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [{ role: 'user', content: prompt }],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 1,
+      max_completion_tokens: 1024,
+      top_p: 1,
+      stream: false,
+    });
+
+    const result = chatCompletion.choices[0]?.message?.content || '{}';
+    console.log('Raw Groq Response:', result); // Log raw response for debugging
+
+    // Attempt to parse the response as JSON
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(result);
+    } catch (parseError) {
+      console.error('JSON Parse Error:', parseError.message);
+      // Fallback: Manually extract flags if JSON parsing fails
+      const lowerResult = result.toLowerCase();
+      parsedResult = {
+        isAIGenerated: lowerResult.includes('isaigenerated": true'),
+        isPlagiarized: lowerResult.includes('isplagiarized": true'),
+      };
+    }
+
+    return {
+      aiGenerated: parsedResult.isAIGenerated || false,
+      plagiarized: parsedResult.isPlagiarized || false,
+    };
+  } catch (error) {
+    console.error('Groq API Error:', error);
+    return { aiGenerated: false, plagiarized: false }; // Default to false on error
+  }
 };
 
 exports.createTest = async (req, res) => {
@@ -58,11 +97,22 @@ exports.submitTest = async (req, res) => {
     const hasSubmitted = test.submissions.some(sub => sub.studentId.toString() === req.user.id);
     if (hasSubmitted) return res.status(403).json({ message: 'You have already submitted this test' });
 
-    const plagiarismFlag = answers.some(ans => checkPlagiarism(ans.text));
-    test.submissions.push({ studentId: req.user.id, answers, wasPasted, plagiarismFlag });
+    // Analyze each answer for AI and plagiarism
+    const analysisResults = await Promise.all(answers.map(async (ans) => await analyzeContent(ans.text)));
+    const plagiarismFlag = analysisResults.some(result => result.plagiarized);
+    const aiGeneratedFlag = analysisResults.some(result => result.aiGenerated);
+
+    test.submissions.push({
+      studentId: req.user.id,
+      answers,
+      wasPasted,
+      plagiarismFlag,
+      aiGeneratedFlag,
+    });
     await test.save();
     res.json(test);
   } catch (err) {
+    console.error('Submit Test Error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -98,4 +148,4 @@ exports.assignTest = async (req, res) => {
     console.error('Error assigning student:', err);
     res.status(500).json({ message: 'Server error' });
   }
-}
+};

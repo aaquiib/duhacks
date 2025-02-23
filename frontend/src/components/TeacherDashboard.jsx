@@ -58,7 +58,9 @@ const TeacherDashboard = ({ user }) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to assign student');
-      setTests(tests.map(t => t._id === testId ? data : t));
+      setTests((prevTests) =>
+        prevTests.map((t) => (t._id === testId ? data : t))
+      );
       setAssignEmail('');
       setError(null);
       console.log('Assigned student successfully:', data);
@@ -76,7 +78,7 @@ const TeacherDashboard = ({ user }) => {
       <div className="tests-list">
         <h2>All Tests</h2>
         {tests.length > 0 ? (
-          tests.map(t => (
+          tests.map((t) => (
             <div key={t._id} className="test-item">
               <h4>{t.title}</h4>
               <p>{t.questions.length} Questions</p>
@@ -92,7 +94,9 @@ const TeacherDashboard = ({ user }) => {
               <div className="assigned-students">
                 <h5>Assigned Students:</h5>
                 {t.assignedStudents.length > 0 ? (
-                  t.assignedStudents.map((s, i) => <p key={i}>{s.email}</p>)
+                  t.assignedStudents.map((s) => (
+                    <p key={s._id}>{s.email}</p>
+                  ))
                 ) : (
                   <p>No students assigned</p>
                 )}
@@ -103,12 +107,27 @@ const TeacherDashboard = ({ user }) => {
                   t.submissions.map((sub, i) => (
                     <div key={i} className="submission-item">
                       <p>
-                        <strong>{sub.studentId.email}</strong> - Submitted: {new Date(sub.submittedAt).toLocaleString()}
-                        {sub.wasPasted && <span className="paste-flag"> (Copy-Pasted)</span>}
-                        {sub.plagiarismFlag && <span className="plagiarism-flag"> (Plagiarism Detected)</span>}
+                        <strong>{sub.studentId.email}</strong> - Submitted:{' '}
+                        {new Date(sub.submittedAt).toLocaleString()}
+                        {sub.wasPasted && (
+                          <span className="paste-flag"> (Copy-Pasted)</span>
+                        )}
+                        {sub.plagiarismFlag && (
+                          <span className="plagiarism-flag">
+                            {' '}
+                            (Plagiarism Detected)
+                          </span>
+                        )}
+                        {sub.aiGeneratedFlag && (
+                          <span className="ai-flag"> (AI-Generated)</span>
+                        )}
                       </p>
                       {sub.answers.map((ans, j) => (
-                        <p key={j}><strong>Q{j + 1}:</strong> {t.questions[ans.questionIndex].text} - <strong>A:</strong> {ans.text}</p>
+                        <p key={j}>
+                          <strong>Q{j + 1}:</strong>{' '}
+                          {t.questions[ans.questionIndex].text} -{' '}
+                          <strong>A:</strong> {ans.text}
+                        </p>
                       ))}
                     </div>
                   ))
@@ -119,7 +138,7 @@ const TeacherDashboard = ({ user }) => {
             </div>
           ))
         ) : (
-          <p>No tests created yet.</p>
+          <p>No tests available yet.</p>
         )}
       </div>
     </div>

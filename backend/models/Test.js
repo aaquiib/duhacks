@@ -11,7 +11,7 @@ const testSchema = new mongoose.Schema({
     submittedAt: { type: Date, default: Date.now },
     wasPasted: { type: Boolean, default: false },
     plagiarismFlag: { type: Boolean, default: false },
+    aiGeneratedFlag: { type: Boolean, default: false }, // New field
   }],
 });
-
 module.exports = mongoose.model('Test', testSchema);

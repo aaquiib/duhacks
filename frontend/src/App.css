@@ -412,7 +412,12 @@
   margin-left: 10px;
 }
 
-/* Add to the bottom of frontend/src/App.css */
+.ai-flag {
+  color: #2196f3; /* Blue to distinguish from paste and plagiarism flags */
+  font-weight: bold;
+  margin-left: 10px;
+}
+
 .camera-container {
   margin-bottom: 20px;
   text-align: center;
