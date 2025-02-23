@@ -205,7 +205,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 For questions or feedback, please contact:
 
-- Email: codedpool10@gail.com
+- Email: codedpool10@gmail.com
 - GitHub: [https://github.com/your-repo/authentiTest](https://github.com/your-repo/authentiTest)
 
 ---
