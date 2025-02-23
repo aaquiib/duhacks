@@ -1,10 +1,9 @@
-// src/components/TestView.jsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
+import FaceVerification from './FaceVerification';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
 const socket = io(`${BACKEND_URL}`, { withCredentials: true });
 
 const TestView = ({ user, onLogout }) => {
@@ -14,49 +13,20 @@ const TestView = ({ user, onLogout }) => {
   const [answers, setAnswers] = useState([]);
   const [error, setError] = useState(null);
   const [wasPasted, setWasPasted] = useState(false);
-  const [faceStatus, setFaceStatus] = useState('Waiting for detection...');
-  const [alertClass, setAlertClass] = useState('');
+  const [faceStatus, setFaceStatus] = useState('Face detected');
+  const [alertClass, setAlertClass] = useState('alert-success');
+  const [alertCount, setAlertCount] = useState(0);
+  const [isVerified, setIsVerified] = useState(false);
+  const MAX_ALERTS = 3;
   const textareaRefs = useRef([]);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamingRef = useRef(false);
+  const lastAlertTimeRef = useRef(0);
 
   useEffect(() => {
     fetchTest();
-    startCamera();
-
-    socket.on('alert', (data) => {
-      setFaceStatus(data.message);
-      setAlertClass(
-        data.type === 'success' ? 'alert-success' :
-        data.type === 'warning' ? 'alert-warning' : 'alert-danger'
-      );
-    });
-
-    return () => {
-      stopCamera();
-      socket.off('alert');
-    };
   }, [id]);
-
-  useEffect(() => {
-    textareaRefs.current.forEach((textarea, index) => {
-      if (textarea) {
-        textarea.addEventListener('paste', () => {
-          console.log(`Paste detected in textarea ${index}`);
-          setWasPasted(true);
-        });
-      }
-    });
-
-    return () => {
-      textareaRefs.current.forEach((textarea) => {
-        if (textarea) {
-          textarea.removeEventListener('paste', () => setWasPasted(true));
-        }
-      });
-    };
-  }, [test]);
 
   const fetchTest = async () => {
     try {
@@ -98,8 +68,40 @@ const TestView = ({ user, onLogout }) => {
     }
   };
 
-  const captureAndSend = () => {
-    if (!streamingRef.current || !canvasRef.current || !videoRef.current) return;
+  const handleSocketAlert = useCallback((data) => {
+    const currentTime = Date.now();
+    if (currentTime - lastAlertTimeRef.current >= 5000) {
+      let message = '';
+      if (data.type === 'warning') {
+        message = 'No face detected!';
+      } else if (data.type === 'danger') {
+        message = 'Multiple faces detected!';
+      }
+
+      if (message) {
+        setFaceStatus(message);
+        setAlertClass(data.type === 'warning' ? 'alert-warning' : 'alert-danger');
+        setAlertCount((prev) => {
+          const newCount = prev + 1;
+          if (newCount >= MAX_ALERTS) {
+            autoSubmitTest();
+          }
+          return newCount;
+        });
+        alert(`${message} (Alert ${alertCount + 1}/${MAX_ALERTS})`);
+        lastAlertTimeRef.current = currentTime;
+      } else {
+        setFaceStatus('Face detected');
+        setAlertClass('alert-success');
+      }
+    }
+  }, [alertCount]);
+
+  const captureAndSend = useCallback(() => {
+    if (!streamingRef.current || !canvasRef.current || !videoRef.current) {
+      setTimeout(captureAndSend, 3000);
+      return;
+    }
 
     const context = canvasRef.current.getContext('2d');
     context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
@@ -121,9 +123,6 @@ const TestView = ({ user, onLogout }) => {
             data.alertType === 'success' ? 'alert-success' :
             data.alertType === 'warning' ? 'alert-warning' : 'alert-danger'
           );
-          if (data.faceCount === 0 || data.faceCount > 1) {
-            alert(data.message);
-          }
         })
         .catch((error) => {
           console.error('Error:', error);
@@ -133,7 +132,7 @@ const TestView = ({ user, onLogout }) => {
     }, 'image/jpeg');
 
     setTimeout(captureAndSend, 3000);
-  };
+  }, []);
 
   const updateAnswer = (index, value) => {
     const newAnswers = [...answers];
@@ -141,9 +140,8 @@ const TestView = ({ user, onLogout }) => {
     setAnswers(newAnswers);
   };
 
-  const submitTest = async (e) => {
-    e.preventDefault();
-    if (answers.some((a) => !a.trim())) {
+  const submitTest = async (force = false) => {
+    if (!force && answers.some((a) => !a.trim())) {
       setError('Please answer all questions');
       return;
     }
@@ -153,7 +151,7 @@ const TestView = ({ user, onLogout }) => {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          answers: answers.map((text, index) => ({ questionIndex: index, text })),
+          answers: answers.map((text, index) => ({ questionIndex: index, text: text || 'Auto-submitted due to violations' })),
           wasPasted,
         }),
       });
@@ -168,6 +166,19 @@ const TestView = ({ user, onLogout }) => {
     }
   };
 
+  const autoSubmitTest = useCallback(() => {
+    submitTest(true); // Silent submission
+  }, []);
+
+  const handleVerificationSuccess = () => {
+    setIsVerified(true);
+    startCamera();
+    // Delay socket listener to avoid catching residual verification alerts
+    setTimeout(() => {
+      socket.on('alert', handleSocketAlert);
+    }, 3000); // Matches first capture cycle
+  };
+
   const handleLogoutClick = () => {
     stopCamera();
     onLogout();
@@ -175,6 +186,10 @@ const TestView = ({ user, onLogout }) => {
   };
 
   if (!test) return <div>Loading...</div>;
+
+  if (!isVerified) {
+    return <FaceVerification onVerificationSuccess={handleVerificationSuccess} />;
+  }
 
   return (
     <div className="dashboard test-view">
@@ -204,8 +219,11 @@ const TestView = ({ user, onLogout }) => {
         <video ref={videoRef} width="320" height="240" autoPlay style={{ borderRadius: '8px', marginBottom: '10px' }}></video>
         <canvas ref={canvasRef} width="320" height="240" style={{ display: 'none' }}></canvas>
         <p id="status" className={alertClass}>{faceStatus}</p>
+        <p>Alert Count: {alertCount}/{MAX_ALERTS} (Test will auto-submit at {MAX_ALERTS} alerts)</p>
       </div>
-      <form onSubmit={submitTest}>
+
+
+      <form onSubmit={(e) => submitTest(e, false)}>
         {test.questions.map((q, index) => (
           <div key={index} className="question-item">
             <h3>{index + 1}. {q.text}</h3>
