@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import TestForm from './TestForm';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'; // Fallback URL
 
 const TeacherDashboard = ({ user }) => {
   const [tests, setTests] = useState([]);
@@ -13,17 +13,20 @@ const TeacherDashboard = ({ user }) => {
   useEffect(() => {
     fetchTests();
     fetchStudents();
-  }, []);
+  }, [user]); // Include user in dependency array to refetch if user changes
 
   const fetchTests = async () => {
     try {
+      setError(null); // Reset error state on new fetch attempt
       const res = await fetch(`${BACKEND_URL}/tests`, {
         credentials: 'include', // Include cookies in request
       });
-      if (!res.ok) throw new Error('Failed to fetch tests');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fetch tests');
+      }
       const data = await res.json();
       setTests(data);
-      setError(null);
     } catch (err) {
       setError(err.message);
       console.error('Fetch tests error:', err);
@@ -32,10 +35,14 @@ const TeacherDashboard = ({ user }) => {
 
   const fetchStudents = async () => {
     try {
+      setError(null); // Reset error state on new fetch attempt
       const res = await fetch(`${BACKEND_URL}/students`, {
         credentials: 'include', // Include cookies in request
       });
-      if (!res.ok) throw new Error('Failed to fetch students');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fetch students');
+      }
       const data = await res.json();
       setStudents(data);
     } catch (err) {
@@ -50,6 +57,7 @@ const TeacherDashboard = ({ user }) => {
       return;
     }
     try {
+      setError(null); // Reset error state on new assign attempt
       const res = await fetch(`${BACKEND_URL}/tests/${testId}/assign`, {
         method: 'POST',
         headers: {
@@ -60,11 +68,12 @@ const TeacherDashboard = ({ user }) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to assign student');
+      
+      // Update tests state with the new data
       setTests((prevTests) =>
         prevTests.map((t) => (t._id === testId ? data : t))
       );
       setAssignEmail('');
-      setError(null);
       console.log('Assigned student successfully:', data);
     } catch (err) {
       setError(err.message);
@@ -97,7 +106,7 @@ const TeacherDashboard = ({ user }) => {
                 <h5>Assigned Students:</h5>
                 {t.assignedStudents.length > 0 ? (
                   t.assignedStudents.map((s) => (
-                    <p key={s._id}>{s.email}</p>
+                    <p key={s._id || s.email}>{s.email}</p> // Fallback to email if _id is missing
                   ))
                 ) : (
                   <p>No students assigned</p>
@@ -109,16 +118,13 @@ const TeacherDashboard = ({ user }) => {
                   t.submissions.map((sub, i) => (
                     <div key={i} className="submission-item">
                       <p>
-                        <strong>{sub.studentId.email}</strong> - Submitted:{' '}
+                        <strong>{sub.studentId?.email || 'Unknown Student'}</strong> - Submitted:{' '}
                         {new Date(sub.submittedAt).toLocaleString()}
                         {sub.wasPasted && (
                           <span className="paste-flag"> (Copy-Pasted)</span>
                         )}
                         {sub.plagiarismFlag && (
-                          <span className="plagiarism-flag">
-                            {' '}
-                            (Plagiarism Detected)
-                          </span>
+                          <span className="plagiarism-flag"> (Plagiarism Detected)</span>
                         )}
                         {sub.aiGeneratedFlag && (
                           <span className="ai-flag"> (AI-Generated)</span>
@@ -126,8 +132,7 @@ const TeacherDashboard = ({ user }) => {
                       </p>
                       {sub.answers.map((ans, j) => (
                         <p key={j}>
-                          <strong>Q{j + 1}:</strong>{' '}
-                          {t.questions[ans.questionIndex].text} -{' '}
+                          <strong>Q{j + 1}:</strong> {t.questions[ans.questionIndex].text} -{' '}
                           <strong>A:</strong> {ans.text}
                         </p>
                       ))}
