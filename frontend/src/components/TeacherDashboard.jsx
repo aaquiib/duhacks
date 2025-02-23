@@ -1,17 +1,20 @@
+// src/components/TeacherDashboard.jsx
 import { useState, useEffect } from 'react';
 import TestForm from './TestForm';
+import { useNavigate } from 'react-router-dom';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const TeacherDashboard = ({ user }) => {
+const TeacherDashboard = ({ user, onLogout }) => {
   const [tests, setTests] = useState([]);
   const [students, setStudents] = useState([]);
   const [assignEmails, setAssignEmails] = useState({});
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('tests');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchTests();    // These functions are now defined below
+    fetchTests();
     fetchStudents();
   }, []);
 
@@ -86,12 +89,35 @@ const TeacherDashboard = ({ user }) => {
     }
   };
 
+  const handleLogoutClick = () => {
+    onLogout();
+    navigate('/');
+  };
+
   return (
     <div className="teacher-dashboard">
-      <header className="dashboard-header">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>Welcome, {user.email}</h1>
-        {error && <p className="error-message">{error}</p>}
-      </header>
+        <button
+          onClick={handleLogoutClick}
+          style={{
+            padding: '10px 20px',
+            background: 'linear-gradient(90deg, #721c24, #9b2c2c)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: '500',
+            transition: 'background 0.3s ease, transform 0.2s ease',
+          }}
+          onMouseOver={(e) => (e.target.style.background = 'linear-gradient(90deg, #9b2c2c, #c53030)')}
+          onMouseOut={(e) => (e.target.style.background = 'linear-gradient(90deg, #721c24, #9b2c2c)')}
+        >
+          Logout
+        </button>
+      </div>
+      {error && <p className="error-message">{error}</p>}
 
       <div className="dashboard-tabs">
         <button
