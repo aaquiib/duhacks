@@ -1,3 +1,4 @@
+// backend/index.js
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -12,12 +13,11 @@ const authMiddleware = require('./middleware/authMiddleware');
 const authController = require('./controllers/authController');
 const testController = require('./controllers/testController');
 const studentController = require('./controllers/studentController');
-const User = require('./models/User'); // Import User model
+const User = require('./models/User');
 
 const app = express();
 const server = http.createServer(app);
 
-// Define FRONTEND_URL from environment variables with a fallback
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
 // Configure Socket.IO with dynamic FRONTEND_URL
@@ -45,7 +45,7 @@ connectDB();
 
 // AWS Rekognition Client
 const rekognition = new RekognitionClient({
-  region: 'us-east-1', // Change based on your AWS region
+  region: 'us-east-1',
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -56,14 +56,34 @@ const rekognition = new RekognitionClient({
 app.post('/register', authController.register);
 app.post('/login', authController.login);
 
-// New endpoint to get authenticated user details
+// Get authenticated user details
 app.get('/me', authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password'); // Exclude password
+    const user = await User.findById(req.user.id).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json({ user: { id: user._id, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Logout Route
+app.post('/logout', (req, res) => {
+  console.log('Logout request received');
+  try {
+    // Clear the token cookie with explicit attributes matching the login route
+    res.cookie('token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Match login settings
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict', // Match login settings
+      path: '/', // Explicitly set path to root to ensure it matches
+      expires: new Date(0), // Expire immediately
+    });
+    console.log('Token cookie cleared');
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (err) {
+    console.error('Logout error:', err);
+    res.status(500).json({ message: 'Server error during logout' });
   }
 });
 
@@ -89,7 +109,7 @@ app.post('/detect-faces', upload.single('image'), async (req, res) => {
     const response = await rekognition.send(command);
     const faceDetails = response.FaceDetails;
 
-    let message = 'Face detected'; // Default message
+    let message = 'Face detected';
     let alertType = 'success';
 
     if (faceDetails.length === 0) {

@@ -1,26 +1,26 @@
 // src/components/TeacherDashboard.jsx
 import { useState, useEffect } from 'react';
 import TestForm from './TestForm';
+import { useNavigate } from 'react-router-dom';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'; // Fallback URL
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
-const TeacherDashboard = ({ user }) => {
+const TeacherDashboard = ({ user, onLogout }) => {
   const [tests, setTests] = useState([]);
   const [students, setStudents] = useState([]);
   const [assignEmail, setAssignEmail] = useState('');
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchTests();
     fetchStudents();
-  }, [user]); // Include user in dependency array to refetch if user changes
+  }, [user]);
 
   const fetchTests = async () => {
     try {
-      setError(null); // Reset error state on new fetch attempt
-      const res = await fetch(`${BACKEND_URL}/tests`, {
-        credentials: 'include', // Include cookies in request
-      });
+      setError(null);
+      const res = await fetch(`${BACKEND_URL}/tests`, { credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch tests');
@@ -35,10 +35,8 @@ const TeacherDashboard = ({ user }) => {
 
   const fetchStudents = async () => {
     try {
-      setError(null); // Reset error state on new fetch attempt
-      const res = await fetch(`${BACKEND_URL}/students`, {
-        credentials: 'include', // Include cookies in request
-      });
+      setError(null);
+      const res = await fetch(`${BACKEND_URL}/students`, { credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch students');
@@ -57,33 +55,51 @@ const TeacherDashboard = ({ user }) => {
       return;
     }
     try {
-      setError(null); // Reset error state on new assign attempt
+      setError(null);
       const res = await fetch(`${BACKEND_URL}/tests/${testId}/assign`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Include cookies in request
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ studentEmail: assignEmail }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to assign student');
-      
-      // Update tests state with the new data
-      setTests((prevTests) =>
-        prevTests.map((t) => (t._id === testId ? data : t))
-      );
+      setTests((prevTests) => prevTests.map((t) => (t._id === testId ? data : t)));
       setAssignEmail('');
-      console.log('Assigned student successfully:', data);
     } catch (err) {
       setError(err.message);
       console.error('Assign student error:', err);
     }
   };
 
+  const handleLogoutClick = () => {
+    onLogout();
+    navigate('/');
+  };
+
   return (
     <div className="dashboard">
-      <h1>Welcome, {user.email} (Teacher)</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1>Welcome, {user.email} (Teacher)</h1>
+        <button
+          onClick={handleLogoutClick}
+          style={{
+            padding: '10px 20px',
+            background: 'linear-gradient(90deg, #721c24, #9b2c2c)', // Red gradient for logout
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: '500',
+            transition: 'background 0.3s ease, transform 0.2s ease',
+          }}
+          onMouseOver={(e) => (e.target.style.background = 'linear-gradient(90deg, #9b2c2c, #c53030)')}
+          onMouseOut={(e) => (e.target.style.background = 'linear-gradient(90deg, #721c24, #9b2c2c)')}
+        >
+          Logout
+        </button>
+      </div>
       {error && <p className="error">{error}</p>}
       <TestForm onTestCreated={fetchTests} />
       <div className="tests-list">
@@ -105,9 +121,7 @@ const TeacherDashboard = ({ user }) => {
               <div className="assigned-students">
                 <h5>Assigned Students:</h5>
                 {t.assignedStudents.length > 0 ? (
-                  t.assignedStudents.map((s) => (
-                    <p key={s._id || s.email}>{s.email}</p> // Fallback to email if _id is missing
-                  ))
+                  t.assignedStudents.map((s) => <p key={s._id || s.email}>{s.email}</p>)
                 ) : (
                   <p>No students assigned</p>
                 )}
@@ -120,15 +134,9 @@ const TeacherDashboard = ({ user }) => {
                       <p>
                         <strong>{sub.studentId?.email || 'Unknown Student'}</strong> - Submitted:{' '}
                         {new Date(sub.submittedAt).toLocaleString()}
-                        {sub.wasPasted && (
-                          <span className="paste-flag"> (Copy-Pasted)</span>
-                        )}
-                        {sub.plagiarismFlag && (
-                          <span className="plagiarism-flag"> (Plagiarism Detected)</span>
-                        )}
-                        {sub.aiGeneratedFlag && (
-                          <span className="ai-flag"> (AI-Generated)</span>
-                        )}
+                        {sub.wasPasted && <span className="paste-flag"> (Copy-Pasted)</span>}
+                        {sub.plagiarismFlag && <span className="plagiarism-flag"> (Plagiarism Detected)</span>}
+                        {sub.aiGeneratedFlag && <span className="ai-flag"> (AI-Generated)</span>}
                       </p>
                       {sub.answers.map((ans, j) => (
                         <p key={j}>

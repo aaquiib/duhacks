@@ -10,7 +10,7 @@ import './App.css';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state to prevent flicker
+  const [loading, setLoading] = useState(true);
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -18,14 +18,14 @@ function App() {
     const checkAuth = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/me`, {
-          credentials: 'include', // Include cookies in request
+          credentials: 'include',
         });
         if (res.ok) {
           const data = await res.json();
-          localStorage.setItem('user', JSON.stringify(data.user)); // Persist user info for UI
+          localStorage.setItem('user', JSON.stringify(data.user));
           setUser(data.user);
         } else {
-          localStorage.removeItem('user'); // Clear user info if not authenticated
+          localStorage.removeItem('user');
           setUser(null);
         }
       } catch (err) {
@@ -33,14 +33,44 @@ function App() {
         setUser(null);
         localStorage.removeItem('user');
       } finally {
-        setLoading(false); // Done checking auth
+        setLoading(false);
       }
     };
 
     checkAuth();
   }, []);
 
-  if (loading) return <div>Loading...</div>; // Show loading state while checking auth
+  const handleLogout = async () => {
+    console.log('Initiating logout...');
+    try {
+      const res = await fetch(`${BACKEND_URL}/logout`, {
+        method: 'POST',
+        credentials: 'include', // Ensure cookies are sent with the request
+      });
+      const data = await res.json();
+      if (res.ok) {
+        console.log('Logout successful:', data.message);
+        localStorage.removeItem('user');
+        setUser(null);
+        // Clear cookie client-side as a fallback
+        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      } else {
+        console.error('Logout failed on server:', data.message);
+        // Clear client-side state even if server fails
+        localStorage.removeItem('user');
+        setUser(null);
+        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      }
+    } catch (err) {
+      console.error('Logout request failed:', err);
+      // Clear client-side state on network error
+      localStorage.removeItem('user');
+      setUser(null);
+      document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <Router>
@@ -50,15 +80,33 @@ function App() {
           <Route path="/register" element={<Register setUser={setUser} />} />
           <Route
             path="/teacher"
-            element={user && user.role === 'teacher' ? <TeacherDashboard user={user} /> : <Navigate to="/" />}
+            element={
+              user && user.role === 'teacher' ? (
+                <TeacherDashboard user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
           />
           <Route
             path="/student"
-            element={user && user.role === 'student' ? <StudentDashboard user={user} /> : <Navigate to="/" />}
+            element={
+              user && user.role === 'student' ? (
+                <StudentDashboard user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
           />
           <Route
             path="/test/:id"
-            element={user && user.role === 'student' ? <TestView user={user} /> : <Navigate to="/" />}
+            element={
+              user && user.role === 'student' ? (
+                <TestView user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
           />
         </Routes>
       </div>

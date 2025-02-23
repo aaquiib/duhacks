@@ -1,13 +1,13 @@
-// frontend/src/components/TestView.jsx
+// src/components/TestView.jsx
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const socket = io(`${BACKEND_URL}`, { withCredentials: true }); // Include credentials for Socket.IO
+const socket = io(`${BACKEND_URL}`, { withCredentials: true });
 
-const TestView = ({ user }) => {
+const TestView = ({ user, onLogout }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [test, setTest] = useState(null);
@@ -25,7 +25,6 @@ const TestView = ({ user }) => {
     fetchTest();
     startCamera();
 
-    // Socket.IO listener for alerts
     socket.on('alert', (data) => {
       setFaceStatus(data.message);
       setAlertClass(
@@ -61,12 +60,10 @@ const TestView = ({ user }) => {
 
   const fetchTest = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/tests`, {
-        credentials: 'include', // Include cookies in request
-      });
+      const res = await fetch(`${BACKEND_URL}/tests`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch test');
       const data = await res.json();
-      const foundTest = data.find(t => t._id === id);
+      const foundTest = data.find((t) => t._id === id);
       if (!foundTest) throw new Error('Test not found');
       setTest(foundTest);
       setAnswers(foundTest.questions.map(() => ''));
@@ -95,7 +92,7 @@ const TestView = ({ user }) => {
     if (videoRef.current && videoRef.current.srcObject) {
       const stream = videoRef.current.srcObject;
       const tracks = stream.getTracks();
-      tracks.forEach(track => track.stop());
+      tracks.forEach((track) => track.stop());
       videoRef.current.srcObject = null;
       streamingRef.current = false;
     }
@@ -114,10 +111,10 @@ const TestView = ({ user }) => {
       fetch(`${BACKEND_URL}/detect-faces`, {
         method: 'POST',
         body: formData,
-        credentials: 'include', // Include cookies in request
+        credentials: 'include',
       })
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           console.log('Detection Result:', data);
           setFaceStatus(data.message);
           setAlertClass(
@@ -125,17 +122,17 @@ const TestView = ({ user }) => {
             data.alertType === 'warning' ? 'alert-warning' : 'alert-danger'
           );
           if (data.faceCount === 0 || data.faceCount > 1) {
-            alert(data.message); // Browser alert for critical issues
+            alert(data.message);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error:', error);
           setFaceStatus('Error detecting faces');
           setAlertClass('alert-danger');
         });
     }, 'image/jpeg');
 
-    setTimeout(captureAndSend, 3000); // Check every 3 seconds
+    setTimeout(captureAndSend, 3000);
   };
 
   const updateAnswer = (index, value) => {
@@ -146,17 +143,15 @@ const TestView = ({ user }) => {
 
   const submitTest = async (e) => {
     e.preventDefault();
-    if (answers.some(a => !a.trim())) {
+    if (answers.some((a) => !a.trim())) {
       setError('Please answer all questions');
       return;
     }
     try {
       const res = await fetch(`${BACKEND_URL}/tests/${id}/submit`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Include cookies in request
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           answers: answers.map((text, index) => ({ questionIndex: index, text })),
           wasPasted,
@@ -173,11 +168,37 @@ const TestView = ({ user }) => {
     }
   };
 
+  const handleLogoutClick = () => {
+    stopCamera();
+    onLogout();
+    navigate('/');
+  };
+
   if (!test) return <div>Loading...</div>;
 
   return (
     <div className="dashboard test-view">
-      <h1>{test.title}</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1>{test.title}</h1>
+        <button
+          onClick={handleLogoutClick}
+          style={{
+            padding: '10px 20px',
+            background: 'linear-gradient(90deg, #721c24, #9b2c2c)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: '500',
+            transition: 'background 0.3s ease, transform 0.2s ease',
+          }}
+          onMouseOver={(e) => (e.target.style.background = 'linear-gradient(90deg, #9b2c2c, #c53030)')}
+          onMouseOut={(e) => (e.target.style.background = 'linear-gradient(90deg, #721c24, #9b2c2c)')}
+        >
+          Logout
+        </button>
+      </div>
       {error && <p className="error">{error}</p>}
       <div className="camera-container">
         <video ref={videoRef} width="320" height="240" autoPlay style={{ borderRadius: '8px', marginBottom: '10px' }}></video>
@@ -189,7 +210,7 @@ const TestView = ({ user }) => {
           <div key={index} className="question-item">
             <h3>{index + 1}. {q.text}</h3>
             <textarea
-              ref={el => (textareaRefs.current[index] = el)}
+              ref={(el) => (textareaRefs.current[index] = el)}
               placeholder="Your answer..."
               value={answers[index]}
               onChange={(e) => updateAnswer(index, e.target.value)}
