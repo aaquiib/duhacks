@@ -1,4 +1,3 @@
-// backend/index.js
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -17,9 +16,23 @@ const User = require('./models/User'); // Import User model
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: 'http://localhost:5173', credentials: true } });
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+// Define FRONTEND_URL from environment variables with a fallback
+const FRONTEND_URL = process.env.FRONTEND_URL;
+
+// Configure Socket.IO with dynamic FRONTEND_URL
+const io = new Server(server, { 
+  cors: { 
+    origin: FRONTEND_URL, 
+    credentials: true 
+  } 
+});
+
+// Configure CORS with dynamic FRONTEND_URL
+app.use(cors({ 
+  origin: FRONTEND_URL, 
+  credentials: true 
+}));
 app.use(express.json());
 app.use(cookieParser());
 
