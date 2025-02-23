@@ -1,6 +1,7 @@
 
 ---
 # AuthentiTest
+https://youtu.be/KWZtVZcIpa4
 --------------
 
 **AuthentiTest** is a comprehensive online examination platform designed to ensure academic integrity through advanced face detection and plagiarism checks. The application leverages AWS Rekognition for real-time face verification, Groq API for AI-generated content and plagiarism analysis, and integrates seamlessly with MongoDB for data persistence.
