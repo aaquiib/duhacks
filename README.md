@@ -214,4 +214,4 @@ Thank you for using **AuthentiTest**! We hope this platform helps maintain acade
 
 --- 
 
-Create with ❤️ and 🧠 @ DUHACKS4.0 by 🦊
+Create with ❤️ and 🧠 @ DUHACKS4.0 by 🦊🐢
